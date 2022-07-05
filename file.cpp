@@ -3,10 +3,16 @@
 #import <cstring>
 #import <cctype>
 
-//[] create custom string cat func to deal with xyz + \t concat
+//[x] create custom string cat func to deal with xyz + \t concat
+//[] debug
+//[] test multi_cat_string()
+
+typedef void(*FnPtr_get_string)(char*, const int&, std::fstream&);
+typedef void(*FnPtr_reset_string)(char*);
+typedef void(*FnPtr_multi_string_cat)(char**, const int&);
 
 void get_string(char* string, const int& stringSize, std::fstream& file, 
-		void*(reset_string)(char*)){
+		FnPtr_reset_string){
 
 	reset_string(string); 
 	size_t index {0};
@@ -28,20 +34,38 @@ void reset_string(char* string){
 
 void extract_modify_string(char* string, const int& stringSize, 
 		std::fstream& openFile, std::fstream &saveFile, 
-		void*(get_string)(char*, const int&, std::fstream&)){ //*func missing *reset_string
+		FnPtr_get_string, FnPtr_reset_string, FnPtr_multi_string_cat){ 
 
 	char xyz[]{"xyz"};
+	const int stringArraySize{3};
+	char* stringArray[stringArraySize]; //array of points to char 
 	while(openFile.peek() != '\n'){
-		get_string(string, stringSize, openFile);	
+		get_string(string, stringSize, openFile); //returns current header string
+		stringArray[0] = string; //assing current header to char array
+		stringArray[2] = '\t'; // assign tab char -> last index
 		for(size_t w {0}; w < 3; ++w){
-			string = std::strcat(string,xyz[w]);
-			string = std::strcat(string, '\t');
-		   	saveFile << string; 	
+			stringArray[1] = xyz[w]; //assign x/y/z char to middle char array index
+			multi_string_cat(stringArray, stringArraySize); //pass entire char array to cat all string
+		   	saveFile << string; //pass cat string
 		}
 	}
 }
 
+void multi_string_cat(char** stringArray, const int& stringArraySize){
+	
+		//concatenates string to 0-INDEXED string in char**
+		//does not return new string -> is appending to a currently existing string
+	size_t i {1}, j {0};
+	for(i ; i < stringArraySize; ++i){ //looping throuhg ptr->ptrs
+		while(stringArray[i][j] != '\0'){ //looping through indiviual strings
+			stringArray[0][j] = stringArray[i][j];	
+			++j;
+		}
+	}
 
+	stringArray[i-1][j] = '\0'; //append null terminator
+	return;
+}
 
 int main(){
 	
@@ -66,7 +90,7 @@ int main(){
 		get_string(string, stringSize, openFile, reset_string); //read string from file
 		if(std::strcmp(string, comp_string) == 0) //if string matches comp_string
 			extract_modify_string(string, stringSize, openFile, saveFile,
-					get_string);
+					get_string, reset_string, multi_cat_string);
 		}		
 	}
 
