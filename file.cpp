@@ -7,14 +7,14 @@
 //[] debug
 //[] test multi_cat_string()
 
-typedef void(*FnPtr_get_string)(char*, const int&, std::fstream&);
+typedef void(*FnPtr_get_string)(char*, const int&, std::fstream&, void(*));
 typedef void(*FnPtr_reset_string)(char*);
 typedef void(*FnPtr_multi_string_cat)(char**, const int&);
 
 void get_string(char* string, const int& stringSize, std::fstream& file, 
 		FnPtr_reset_string){
 
-	reset_string(string); 
+	*(FnPtr_reset_string)(string);
 	size_t index {0};
 	while(std::isspace(file.peek() == 0)){
 		string[index] = file.get();
@@ -40,12 +40,12 @@ void extract_modify_string(char* string, const int& stringSize,
 	const int stringArraySize{3};
 	char* stringArray[stringArraySize]; //array of points to char 
 	while(openFile.peek() != '\n'){
-		get_string(string, stringSize, openFile); //returns current header string
+		*(FnPtr_get_string)(string, stringSize, openFile, FnPtr_reset_string); //returns current header string
 		stringArray[0] = string; //assing current header to char array
 		stringArray[2] = '\t'; // assign tab char -> last index
 		for(size_t w {0}; w < 3; ++w){
 			stringArray[1] = xyz[w]; //assign x/y/z char to middle char array index
-			multi_string_cat(stringArray, stringArraySize); //pass entire char array to cat all string
+			*(FnPtr_multi_string_cat)(stringArray, stringArraySize); //pass entire char array to cat all string
 		   	saveFile << string; //pass cat string
 		}
 	}
@@ -61,6 +61,7 @@ void multi_string_cat(char** stringArray, const int& stringArraySize){
 			stringArray[0][j] = stringArray[i][j];	
 			++j;
 		}
+		j = 0; //reset
 	}
 
 	stringArray[i-1][j] = '\0'; //append null terminator
@@ -90,7 +91,7 @@ int main(){
 		get_string(string, stringSize, openFile, reset_string); //read string from file
 		if(std::strcmp(string, comp_string) == 0) //if string matches comp_string
 			extract_modify_string(string, stringSize, openFile, saveFile,
-					get_string, reset_string, multi_cat_string);
+					get_string, reset_string, multi_string_cat);
 		}		
 	}
 
