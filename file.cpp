@@ -3,26 +3,35 @@
 #import <cstring>
 #import <cctype>
 
-typedef void(*FnPtr_reset_string)(char*);
-
 void get_string(char* string, const int& stringSize, std::fstream& file, 
-		FnPtr_reset_string){
+		void(*reset_string)(char*)){
 
-	*(FnPtr_reset_string)(string);
+	std::cout << "get string entered." << std::endl;
+	reset_string(string);
 	size_t index {0};
-	while(std::isspace(file.peek() == 0)){
+	while(!std::isspace(file.peek())){
+		std::cout << "file peek == " << file.peek() << std::endl;
 		string[index] = file.get();
 		++index;	
 	}
+
 	string[index] = '\0';
+	std::cout << string << "\n"; //DEBUGGING
+
+		//conume white space until peek != space char
+	do{
+		file.get();
+	}while(std::isspace(file.peek()));
+
 	return; 
 }
 
 void reset_string(char* string){
-	//reset string for future use
-	size_t i {0};
-	while(string[i] != '\0')
-		string[i] = '\0';
+	
+	std::cout << "reset string entered.\n";
+	for(size_t j {0}; string[j] != '\0'; ++j){
+		string[j] = '\0';
+	}
 	return;
 }
 
@@ -47,6 +56,7 @@ int string_size(char* string){
 	int stringSize{0};
 	while(string[i] != '\0'){
 		++stringSize;	
+		++i;
 	}
 	return stringSize;
 }
