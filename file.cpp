@@ -64,6 +64,38 @@ int string_size(char* string){
 	return stringSize;
 }
 
+bool row_position_test(){
+
+	/*
+	 *Function purpose -> to determine if length of rows are the same
+	 * .tellg() returns fpos obj of type pos_type
+	 * thus need to determine if each row are the same total bytes in size
+	 * .seekg() takes int value but needs to correspond to bytes (char ==1, int ==4, ...)
+	 * Steps:
+	 * 	1. loop through first ~3 rows and determine their length
+	 * 	2. compare lengths from each row -> return true if equal
+	 * 		-> return false if not equal
+	 * */
+
+
+	std::fpos<int> filePos;
+	std::streamoff filePosInc {}; // long long int (can convert fpos -> streamoff)
+	filePos = file.tellg(); // returns current file position
+	int holdPeek {0};
+
+	// BLOCK NEEDS LOGIC CHECK && 'DOES IT WORK?' CHECK
+	for(size_t t {0}; t < 3; ++t){
+		size_t inner {0};
+		while(file.peek() != '\n'){
+			filePos = filePos + filePosInc; //++ current file pos
+		}
+
+		holdPeek = (int)file.peek(); //convert to int
+		while(holdPeek < 48 || holdPeek > 57){ //if current char is NOT a bnum
+			filePos = filePos + filePosInc; //++ current file pos
+		}
+	}
+}
 
 int main(){
 	
@@ -84,6 +116,7 @@ int main(){
 	const int stringSize {50};
 	char string [stringSize] {'\0'}, comp_string [] {"MARKER_NAMES"};
 	int loop_counter{0};
+	std::stream
 
 	while(!openFile.eof()){
 		get_string(string, stringSize, openFile, reset_string); //read string from file
@@ -96,7 +129,12 @@ int main(){
 				clear_spaces(openFile, true);
 				create_new_header(string, string_size(string), saveFile); 
 			}	
-			break;
+			//break;
+			openFile.get(); // consume new line char
+			// ready for row_position_test()
+			if(row_position_test()){
+				// do something ...	
+			}
 		}
 	}
 
