@@ -41,14 +41,14 @@ void reset_string(char* string){
 }
 
 void create_new_header(char* string, int stringSize, 
-		std::fstream& writeFile){
+		std::fstream& writeFile, int& num_of_tabs){
 	
 	char xyz_tab[] {"xyz"};
 	for(size_t a {0}; a < 3; ++a){
 		string[stringSize] = xyz_tab[a]; //append x OR y OR z
 		string[stringSize+1] = '\t'; //append tab char (.tsv file)
 		writeFile.write(string, sizeof string);
-		//writeFile << string; // write to current position in new file
+		++num_of_tabs;
 	}	
 }
 
@@ -82,6 +82,7 @@ int main(){
 	const int stringSize {50};
 	char string [stringSize] {'\0'}, comp_string [] {"MARKER_NAMES"};
 	int loop_counter{0};
+	int num_of_tabs {0};
 
 	while(!openFile.eof()){
 		get_string(string, stringSize, openFile, reset_string); //read string from file
@@ -92,14 +93,15 @@ int main(){
 				//std::clog << "inner while loop.\n";
 				get_string(string, stringSize, openFile, reset_string); // read string
 				clear_spaces(openFile, true);
-				create_new_header(string, string_size(string), saveFile); 
+				create_new_header(string, string_size(string), saveFile, num_of_tabs); 
 			}	
 
 			std::clog << "Header created.\n";
 			openFile.get(); // consume new line char
 
-			while(!openFile.eof()){
-				openFile.get(*saveFile.rdbuf()); // extract until end of file
+			for(size_t a {0}; a < 5; ++a){
+				if (a < num_of_tabs)
+					saveFile.get(*openFile.rdbuf(), '\t');	
 			}
 
 			std::clog << "End of file reached.\n";
