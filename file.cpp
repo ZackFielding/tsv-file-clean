@@ -9,10 +9,6 @@ int main(){
 	int num_exercises {};
 	auto exercise_group = new char[num_exercises][10];
 
-	std::cout << "Enter number of exercises implemented: ";
-	std::cin >> num_exercises;
-	std::cin.ignore();
-
 	// create 2d array to be used for -> get_cur_kinematic_file_name()
 	create_multi_array(num_exercises, num_exercises);
 
