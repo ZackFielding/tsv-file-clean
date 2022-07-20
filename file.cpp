@@ -97,7 +97,7 @@ int main(){
 	}
 			
 	const int stringSize {50};
-	char string [stringSize] {'\0'}, comp_string [20] {"MARKER_NAMES"};
+	char string [stringSize] {'\0'}, kinematic_comp_string [20] {"MARKER_NAMES"};
 	int loop_counter{0};
 	int num_of_tabs {0};
 
@@ -105,7 +105,7 @@ int main(){
 		get_string(string, stringSize, openFile, reset_string); //read string from file
 		//std::clog << "String: " << string << "\n";
 		clear_spaces(openFile, false);
-		if(std::strcmp(string, comp_string) == 0){ //if string matches comp_string
+		if(std::strcmp(string, kinematic_comp_string) == 0){ //if string matches comp_string
 			while(openFile.peek() != '\n'){
 				//std::clog << "inner while loop.\n";
 				get_string(string, stringSize, openFile, reset_string); // read string
@@ -157,30 +157,37 @@ int main(){
 		}
 	}
 
-	reset_string(comp_string); // reset comp string
-	comp_string = "FORCE_PLATE_WIDTH";
+	char grf_comp_string[] {"FORCE_PLATE_WIDTH"};
 
 	while(!openFile.eof()){
 		get_string(string, stringSize, openFile, reset_string); //read string from file
 		clear_spaces(openFile, false);
-		if(std::strcmp(string, comp_string) == 0){ //if string matches comp_string
+		if(std::strcmp(string, grf_comp_string) == 0){ //if string matches comp_string
 			while(openFile.peek() != '\n')
 				openFile.get();
 			openFile.get(); // consume new line char
 
-			create_grf_header(saveFile); // write grf headers to new file
+			create_grf_headers(saveFile); // write grf headers to new file
 
 			int tab_counter {0};
 			while(!openFile.eof()){
-				while(tab_counter <= 3){
+				while(tab_counter <= 2){
 					openFile.get(*saveFile.rdbuf(), '\t');
 					openFile.get(); // consume tab char
 					saveFile.put('\t'); // put tab char
 					++tab_counter;
 				}
-				while(openFile.peek() != '\n')
+				tab_counter = 0;
+				// if the current get 'gets' the last byte of file
+				// eof stil == false
+				// the following get will the change eof -> true
+				while(openFile.peek() != '\n' && !openFile.eof()){
 					openFile.get();
-				saveFile.put(openFile.get()); // put new line char -> new file
+				}
+
+				// only put if not at end of file
+				if(!openFile.eof())
+					saveFile.put(openFile.get()); // put new line char -> new file
 			}
 			std::clog << "End of file reached.\n";
 			}
