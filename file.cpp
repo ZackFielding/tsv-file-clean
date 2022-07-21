@@ -10,139 +10,142 @@ int main(){
 	auto exercise_group = new char[num_exercises][10];
 
 	// create 2d array to be used for -> get_cur_kinematic_file_name()
-	create_multi_array(num_exercises, num_exercises);
+	create_multi_array(exercise_group, num_exercises);
 
+	bool finished {false};
 	// outter loop for files (19 samples == 38 files to read & write)	
 	for(size_t s {0}; s < 20; ++s){
 		if(s == 12)
 			continue; // skip this sample
 
-		std::fstream openFile, saveFile; // creating fstream objects
-			//kinetic file names are identical
-		openFile.open("P08_BS_01_pro.tsv", std::ios_base::in); 
-			// end goal
-		//openFile.open(get_cur_kinemantic_file_name(??), std::ios_base::in); 
-		saveFile.open("P08_kinematic.tsv", std::ios_base::out);
+		while(!finished){
+			std::fstream openFile, saveFile; // creating fstream objects
+				//kinetic file names are identical
+			//openFile.open("P08_BS_01_pro.tsv", std::ios_base::in); 
+				// end goal
+			openFile.open(get_cur_kinematic_file_name(s, exercise_group, 
+						num_exercises, int_to_char, finished),std::ios_base::in); 
+			saveFile.open("P0?_kinematic.tsv", std::ios_base::out);
 
-		if(!openFile || !saveFile){
-			if(!openFile){
-				std::cerr << "Error opening original kinematic file.\n";
-				if(saveFile)
-					saveFile.close();
-				return 1;
-			}else{
-				std::cerr << "Error opening original to-write-to file.\n";
-				if(openFile)
-					openFile.close();
-				return 1;
-			}
-		}
-				
-		const int stringSize {50};
-		char string [stringSize] {'\0'}, kinematic_comp_string [20] {"MARKER_NAMES"};
-		int loop_counter{0};
-		int num_of_tabs {0};
-
-		while(!openFile.eof()){
-			get_string(string, stringSize, openFile, reset_string); //read string from file
-			//std::clog << "String: " << string << "\n";
-			clear_spaces(openFile, false);
-			if(std::strcmp(string, kinematic_comp_string) == 0){ //if string matches comp_string
-				while(openFile.peek() != '\n'){
-					//std::clog << "inner while loop.\n";
-					get_string(string, stringSize, openFile, reset_string); // read string
-					clear_spaces(openFile, true);
-					create_new_header(string, string_size(string), saveFile, num_of_tabs); 
-				}	
-
-				std::clog << "Header created.\n";
-				saveFile.put(openFile.get()); // put new line char -> new file
-
-				// consume all contents on this row (unnecessary text)
-				while(openFile.peek() != '\n')
-					openFile.get();
-				openFile.get(); // consume new line char
-
-				while(!openFile.eof()){
-					openFile.get(*saveFile.rdbuf(), '\t');
-					openFile.get(); // consume tab char
-					saveFile.put('\t'); // put tab char
-				}
-				std::clog << "End of file reached.\n";
+			if(!openFile || !saveFile){
+				if(!openFile){
+					std::cerr << "Error opening original kinematic file.\n";
+					if(saveFile)
+						saveFile.close();
+					return 1;
+				}else{
+					std::cerr << "Error opening original to-write-to file.\n";
+					if(openFile)
+						openFile.close();
+					return 1;
 				}
 			}
+					
+			const int stringSize {50};
+			char string [stringSize] {'\0'}, kinematic_comp_string [20] {"MARKER_NAMES"};
+			int loop_counter{0};
+			int num_of_tabs {0};
 
-		openFile.close();
-		saveFile.close();
-		
-		if(!openFile.is_open())
-			std::clog << "Read only kinematic file closed.\n";
-		if(!saveFile.is_open())
-			std::clog << "Write only kinematic file closed.\n";
+			while(!openFile.eof()){
+				get_string(string, stringSize, openFile, reset_string); //read string from file
+				//std::clog << "String: " << string << "\n";
+				clear_spaces(openFile, false);
+				if(std::strcmp(string, kinematic_comp_string) == 0){ //if string matches comp_string
+					while(openFile.peek() != '\n'){
+						//std::clog << "inner while loop.\n";
+						get_string(string, stringSize, openFile, reset_string); // read string
+						clear_spaces(openFile, true);
+						create_new_header(string, string_size(string), saveFile, num_of_tabs); 
+					}	
 
-		// similar approach for ground reaction force files
-		
-		openFile.open("P08_BS_01_pro_f_1.tsv", std::ios_base::in);
-		saveFile.open("P08_grf_south.tsv", std::ios_base::out);
+					std::clog << "Header created.\n";
+					saveFile.put(openFile.get()); // put new line char -> new file
 
-		if(!openFile || !saveFile){
-			if(!openFile){
-				std::cerr << "Error opening original GRF file.\n";
-				if(saveFile)
-					saveFile.close();
-				return 1;
-			}else{
-				std::cerr << "Error opening original GRF file.\n";
-				if(openFile)
-					openFile.close();
-				return 1;
-			}
-		}
+					// consume all contents on this row (unnecessary text)
+					while(openFile.peek() != '\n')
+						openFile.get();
+					openFile.get(); // consume new line char
 
-		char grf_comp_string[] {"FORCE_PLATE_WIDTH"};
-
-		while(!openFile.eof()){
-			get_string(string, stringSize, openFile, reset_string); //read string from file
-			clear_spaces(openFile, false);
-			if(std::strcmp(string, grf_comp_string) == 0){ //if string matches comp_string
-				while(openFile.peek() != '\n')
-					openFile.get();
-				openFile.get(); // consume new line char
-
-				create_grf_headers(saveFile); // write grf headers to new file
-
-				int tab_counter {0};
-				while(!openFile.eof()){
-					while(tab_counter <= 2){
+					while(!openFile.eof()){
 						openFile.get(*saveFile.rdbuf(), '\t');
 						openFile.get(); // consume tab char
 						saveFile.put('\t'); // put tab char
-						++tab_counter;
 					}
-					tab_counter = 0;
-					// if the current get 'gets' the last byte of file
-					// eof stil == false
-					// the following get will the change eof -> true
-					while(openFile.peek() != '\n' && !openFile.eof()){
-						openFile.get();
+					std::clog << "End of file reached.\n";
 					}
-
-					// only put if not at end of file
-					if(!openFile.eof())
-						saveFile.put(openFile.get()); // put new line char -> new file
 				}
-				std::clog << "End of file reached.\n";
+
+			openFile.close();
+			saveFile.close();
+			
+			if(!openFile.is_open())
+				std::clog << "Read only kinematic file closed.\n";
+			if(!saveFile.is_open())
+				std::clog << "Write only kinematic file closed.\n";
+
+			// similar approach for ground reaction force files
+			
+			openFile.open("P08_BS_01_pro_f_1.tsv", std::ios_base::in);
+			saveFile.open("P08_grf_south.tsv", std::ios_base::out);
+
+			if(!openFile || !saveFile){
+				if(!openFile){
+					std::cerr << "Error opening original GRF file.\n";
+					if(saveFile)
+						saveFile.close();
+					return 1;
+				}else{
+					std::cerr << "Error opening original GRF file.\n";
+					if(openFile)
+						openFile.close();
+					return 1;
 				}
 			}
 
-		openFile.close();
-		saveFile.close();
-		
-		if(!openFile.is_open())
-			std::clog << "Read only GRF file closed.\n";
-		if(!saveFile.is_open())
-			std::clog << "Write only GRF file closed.\n";
+			char grf_comp_string[] {"FORCE_PLATE_WIDTH"};
 
+			while(!openFile.eof()){
+				get_string(string, stringSize, openFile, reset_string); //read string from file
+				clear_spaces(openFile, false);
+				if(std::strcmp(string, grf_comp_string) == 0){ //if string matches comp_string
+					while(openFile.peek() != '\n')
+						openFile.get();
+					openFile.get(); // consume new line char
+
+					create_grf_headers(saveFile); // write grf headers to new file
+
+					int tab_counter {0};
+					while(!openFile.eof()){
+						while(tab_counter <= 2){
+							openFile.get(*saveFile.rdbuf(), '\t');
+							openFile.get(); // consume tab char
+							saveFile.put('\t'); // put tab char
+							++tab_counter;
+						}
+						tab_counter = 0;
+						// if the current get 'gets' the last byte of file
+						// eof stil == false
+						// the following get will the change eof -> true
+						while(openFile.peek() != '\n' && !openFile.eof()){
+							openFile.get();
+						}
+
+						// only put if not at end of file
+						if(!openFile.eof())
+							saveFile.put(openFile.get()); // put new line char -> new file
+					}
+					std::clog << "End of file reached.\n";
+					}
+				}
+
+			openFile.close();
+			saveFile.close();
+			
+			if(!openFile.is_open())
+				std::clog << "Read only GRF file closed.\n";
+			if(!saveFile.is_open())
+				std::clog << "Write only GRF file closed.\n";
+		} // finished (exercise) while loop end
 	} // outter sample for loop end
 
 	// free heap of 2d char array

@@ -18,4 +18,8 @@ void create_multi_array(char exercise_group[][10], int&);
 
 void free_multi_array_heap(char exercise_group[][10], const int&);
 
+char* get_cur_kinematic_file_name(int, char exercise_group[][10], int&,
+		char*(*int_to_char)(int&), bool&);
+
+char* int_to_char(int&);
 #endif
