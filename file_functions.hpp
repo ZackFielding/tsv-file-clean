@@ -1,5 +1,5 @@
-#ifndef FILE_FUNCTIONS.HPP // if file_functions.hpp exists
-#define FILE_FUNCTIONS.HPP // define all the code between here -> endif
+#ifndef FILE_FUNCTIONS_HPP // if file_functions.hpp exists
+#define FILE_FUNCTIONS_HPP // define all the code between here -> endif
 #include <fstream>
 
 void get_string(char*, const int&, std::fstream&, void(*)(char*));
@@ -18,8 +18,10 @@ void create_multi_array(char exercise_group[][10], int&);
 
 void free_multi_array_heap(char exercise_group[][10], const int&);
 
-char* get_cur_kinematic_file_name(int, char exercise_group[][10], int&,
-		char*(*int_to_char)(int&), bool&);
+void get_cur_kinematic_file_name(char* file_name, char* set_string,
+	    int, char exercise_group[][10], 
+		const int&, void(*int_to_char)(char*, int), bool&);
 
-char* int_to_char(int&);
+void int_to_char(char*, const int);
+
 #endif

@@ -1,7 +1,7 @@
-#import <iostream>
-#import <fstream>
-#import <cstring>
-#import <cctype>
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include <cctype>
 #include "file_functions.hpp"
 
 int main(){
@@ -13,6 +13,9 @@ int main(){
 	create_multi_array(exercise_group, num_exercises);
 
 	bool finished {false};
+	char openFileString[50]{'\0'}; // to be file string
+	char setChar[3]{}; // set num as type char -> required for string cat
+
 	// outter loop for files (19 samples == 38 files to read & write)	
 	for(size_t s {0}; s < 20; ++s){
 		if(s == 12)
@@ -20,11 +23,16 @@ int main(){
 
 		while(!finished){
 			std::fstream openFile, saveFile; // creating fstream objects
-				//kinetic file names are identical
-			//openFile.open("P08_BS_01_pro.tsv", std::ios_base::in); 
-				// end goal
-			openFile.open(get_cur_kinematic_file_name(s, exercise_group, 
-						num_exercises, int_to_char, finished),std::ios_base::in); 
+				//kinetic file names are identical -> works
+			openFile.open("P08_BS_01_pro.tsv", std::ios_base::in); 
+				// end goal -> unclear if it will work
+			reset_string(openFileString); // clear previous file name
+			get_cur_kinematic_file_name(openFileString, setChar, s, exercise_group, 
+						num_exercises, int_to_char, finished); //create file string
+			std::cout << openFileString << "\n"; // DEBUG ONLY 
+			openFile.open(openFileString, std::ios_base::in); //pass file string in open()
+			
+			// new file to be created
 			saveFile.open("P0?_kinematic.tsv", std::ios_base::out);
 
 			if(!openFile || !saveFile){
