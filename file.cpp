@@ -6,18 +6,23 @@
 
 int main(){
 
+	// main variables
+	bool finished {false};
+	char openFileString[50]{'\0'}; // to be file string
+	char sampleChar[3]{'\0'}; // par # as string
+	char setChar[2]{'\0'}; // set # as string
 	int num_exercises {};
+
+	std::cout << "Enter number of exercises implemented: ";
+	std::cin >> num_exercises;
+	std::cin.ignore();
 	auto exercise_group = new char[num_exercises][10];
 
 	// create 2d array to be used for -> get_cur_kinematic_file_name()
 	create_multi_array(exercise_group, num_exercises);
 
-	bool finished {false};
-	char openFileString[50]{'\0'}; // to be file string
-	char setChar[3]{}; // set num as type char -> required for string cat
-
 	// outter loop for files (19 samples == 38 files to read & write)	
-	for(size_t s {0}; s < 20; ++s){
+	for(size_t s {1}; s < 21; ++s){
 		if(s == 12)
 			continue; // skip this sample
 
@@ -25,13 +30,14 @@ int main(){
 			std::fstream openFile, saveFile; // creating fstream objects
 				//kinetic file names are identical -> works
 			openFile.open("P08_BS_01_pro.tsv", std::ios_base::in); 
-				// end goal -> unclear if it will work
+			openFile.close(); // dbug only
 			reset_string(openFileString); // clear previous file name
-			get_cur_kinematic_file_name(openFileString, setChar, s, exercise_group, 
+			get_cur_kinematic_file_name(openFileString, sampleChar, setChar, s, exercise_group, 
 						num_exercises, int_to_char, finished); //create file string
 			std::cout << openFileString << "\n"; // DEBUG ONLY 
-			openFile.open(openFileString, std::ios_base::in); //pass file string in open()
-			
+			//openFile.open(openFileString, std::ios_base::in); //pass file string in open()
+		
+			return 1;
 			// new file to be created
 			saveFile.open("P0?_kinematic.tsv", std::ios_base::out);
 

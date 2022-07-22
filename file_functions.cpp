@@ -76,13 +76,10 @@ void create_grf_headers(std::fstream& saveFile){
 
 void create_multi_array(char exercise_group[][10], int& num_exercises){
 
-	std::cout << "Enter number of exercises implemented: ";
-	std::cin >> num_exercises;
-	std::cin.ignore();
 	std::cout << "Enter the exercises to be added (separated by white spaces):"
 		<< std::endl;
 	int a {0}, b {0};
-	while(a < num_exercises && std::cin.peek() != '\n'){
+	while(a < num_exercises){
 		while(std::isspace(std::cin.peek()) == 0){
 			std::cin.get(exercise_group[a][b]);
 			++b;
@@ -90,7 +87,7 @@ void create_multi_array(char exercise_group[][10], int& num_exercises){
 		exercise_group[a][b] = '\0'; // null terminate
 		++a;
 		b = 0; // reset b for next loop
-		if(a < (num_exercises - 1)){
+		if(a < num_exercises){
 			while(std::isspace(std::cin.peek()) != 0)
 				std::cin.get(); // consume space
 		}
@@ -104,48 +101,44 @@ void free_multi_array_heap(char exercise_group[][10], const int& num_exercises){
 	delete [] exercise_group;
 }
 
-void get_cur_kinematic_file_name(char* file_name, char* set_string, 
+void get_cur_kinematic_file_name(char* file_name, char* sampleChar, char* setChar, 
 		int sample_num, char exercise_group[][10], const int& num_exercises,
 	   	void(*int_to_char)(char*, int), bool& finished){
 
-	static char* exercise_ptr {exercise_group[0]};
 	static int exercise_tracker{0};
 	static int set_tracker {49}; // 49 -> '1'
-	set_string[0] = (char)set_tracker;
-	set_string[1] = '\0';
+	setChar[0] = (char)set_tracker;
+	setChar[1] = '\0';
 	file_name[0] = 'P'; // all files start with 'P'
 	file_name[1] = '\0'; // null terminante
 	char under_score[] {"_"};
 	char tail_string[] {"_pro.tsv"};
 
-	int_to_char(set_string, sample_num);
-	std::strcat(file_name, set_string);
-	std::strcat(file_name, under_score);
-	std::strcat(file_name, exercise_ptr);
-	std::strcat(file_name, under_score);
-	std::strcat(file_name, set_string);
-	std::strcat(file_name, under_score);
-	std::strcat(file_name, tail_string);
+	int_to_char(sampleChar, sample_num); // pass in -> char [] & current par #
+	std::strcat(file_name, sampleChar); // append sample char with file name == "P01"
+	std::strcat(file_name, under_score); // append '_' == "P01_"
+	std::strcat(file_name, exercise_group[exercise_tracker]); // append exercise string == "P01_BS"
+	std::strcat(file_name, under_score); // '_' == "P01_BS_"
+	std::strcat(file_name, setChar); // == "P01_BS_1"
+	std::strcat(file_name, tail_string); // == "P01_BS_1_pro.tsv"
 	
 	// handle static variables
 	++set_tracker;
-	if(set_tracker > 51){ // if just finished rep 3
-		if(exercise_tracker < num_exercises){ 
-			++exercise_ptr; // point to next exercise
-			++exercise_tracker; // increment tracker
-		}else{
-			finished = false; // will stop sample while loop in main()
-			exercise_ptr - (num_exercises - 1); //reset pointer to first exercise
-		}
-		set_tracker = 49; // reset set counter to 1	(not matter what)
+	if(set_tracker > 51 && exercise_tracker < num_exercises){
+		++exercise_tracker;
+		set_tracker = 49;
+	}else if(set_tracker > 51 && exercise_tracker >= num_exercises){
+		exercise_tracker = 0;
+		finished = false;
+		set_tracker = 49;
 	}
 }
 
 void int_to_char(char* setChar, const int sample_num){
-	// will only work if 0 <= sample_num <= 99
-	int remainder{0}, base{0};
 
-	remainder = sample_num % 10; //get second digit
+	// will only work if 0 <= sample_num <= 99
+	int remainder{sample_num % 10},  base{0};
+
 	if(sample_num >=10 && sample_num <100){
 		base = sample_num / 10;
 	}else if(sample_num < 10){
