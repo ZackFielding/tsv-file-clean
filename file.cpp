@@ -9,9 +9,12 @@ int main(){
 	// main variables
 	bool finished {false};
 	char openFileString[50]{'\0'}; // to be file string
+	char saveFileString[50]{'\0'}; // to be new file name
 	char sampleChar[3]{'\0'}; // par # as string
 	char setChar[2]{'\0'}; // set # as string
 	int num_exercises {};
+	 // eventually this will be a file read...
+	char leg_array[] {"1222222211112222221"}; //19 as no 12 sample
 
 	std::cout << "Enter number of exercises implemented: ";
 	std::cin >> num_exercises;
@@ -28,19 +31,17 @@ int main(){
 
 		while(!finished){
 			std::fstream openFile, saveFile; // creating fstream objects
-				//kinetic file names are identical -> works
-			openFile.open("P08_BS_01_pro.tsv", std::ios_base::in); 
-			openFile.close(); // dbug only
-			reset_string(openFileString); // clear previous file name
-			get_cur_kinematic_file_name(openFileString, sampleChar, setChar, s, exercise_group, 
-						num_exercises, int_to_char, finished); //create file string
-			std::cout << openFileString << "\n"; // DEBUG ONLY 
-			//openFile.open(openFileString, std::ios_base::in); //pass file string in open()
-		
-			return 1;
-			// new file to be created
-			saveFile.open("P0?_kinematic.tsv", std::ios_base::out);
+				// reset open & save file strings before updating to current file
+			reset_string(openFileString); 
+			reset_string(saveFileString);
+			// compute current file name to be opened + new file name to be created
+			get_cur_kinematic_file_name(openFileString, saveFileString, 
+					sampleChar, setChar, s, exercise_group, num_exercises, 
+					int_to_char, finished, leg_array, false); 
 
+			openFile.open(openFileString, std::ios_base::in); // open read file
+			saveFile.open(saveFileString, std::ios_base::out); // open new file
+		
 			if(!openFile || !saveFile){
 				if(!openFile){
 					std::cerr << "Error opening original kinematic file.\n";
@@ -98,9 +99,16 @@ int main(){
 				std::clog << "Write only kinematic file closed.\n";
 
 			// similar approach for ground reaction force files
-			
-			openFile.open("P08_BS_01_pro_f_1.tsv", std::ios_base::in);
-			saveFile.open("P08_grf_south.tsv", std::ios_base::out);
+				// reset open & save file strings
+			reset_string(openFileString);
+			reset_string(saveFileString);
+				// generate GRF file string names
+			get_cur_kinematic_file_name(openFileString, saveFileString, 
+					sampleChar, setChar, s, exercise_group, num_exercises, 
+					int_to_char, finished, leg_array, true); 
+
+			openFile.open(openFileString, std::ios_base::in);
+			saveFile.open(saveFileString, std::ios_base::out);
 
 			if(!openFile || !saveFile){
 				if(!openFile){
