@@ -137,14 +137,15 @@ void get_cur_kinematic_file_name(char* open_file_name, char* save_file_name, cha
 	
 	// handle static variables
 	++set_tracker;
-	if(set_tracker > 51 && exercise_tracker < num_exercises){
-		++exercise_tracker;
+	if(set_tracker > 51){
+		if(exercise_tracker < (num_exercises - 1))
+			++exercise_tracker; //hit rep 3
+		else{
+			finished = true; // stops main() while(!finished) loop
+			exercise_tracker = 0; // reset for next par loop
+			++sample_tracker; // inc for next par loop
+		}
 		set_tracker = 49;
-	}else if(set_tracker > 51 && exercise_tracker >= num_exercises){
-		exercise_tracker = 0;
-		finished = true;
-		set_tracker = 49;
-		++sample_tracker;
 	}
 }
 
