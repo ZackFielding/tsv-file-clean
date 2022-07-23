@@ -51,9 +51,9 @@ int main(){
 					logFile.write(openFileString, std::strlen(openFileString));
 				}else{
 					std::cerr << "Error opening original to-write-to file.\n";
-					logFile.write(saveFileString, sizeof saveFileString);
+					logFile.write(saveFileString, std::strlen(saveFileString));
 				}
-				logFile.write(fileOpenErrorString, sizeof fileOpenErrorString);
+				logFile.write(fileOpenErrorString, std::strlen(fileOpenErrorString));
 				logFile.close();
 				continue; // skip to start of while(!finished) loop and try next file
 			}
