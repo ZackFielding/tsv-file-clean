@@ -15,6 +15,8 @@ int main(){
 	int num_exercises {};
 	 // eventually this will be a file read...
 	char leg_array[] {"1222222211112222221"}; //19 as no 12 sample
+	std::fstream openFile, saveFile, logFile; // creating fstream objects
+	char fileOpenErrorString[] {" inccured an error while attempting to open.\n"};
 
 	std::cout << "Enter number of exercises implemented: ";
 	std::cin >> num_exercises;
@@ -25,12 +27,12 @@ int main(){
 	create_multi_array(exercise_group, num_exercises);
 
 	// outter loop for files (19 samples == 38 files to read & write)	
-	for(size_t s {1}; s < 21; ++s){
+	size_t starting_sample {1}, sample_stop {1};
+	for(size_t s {starting_sample}; s <= sample_stop; ++s){
 		if(s == 12)
 			continue; // skip this sample
 
 		while(!finished){
-			std::fstream openFile, saveFile; // creating fstream objects
 				// reset open & save file strings before updating to current file
 			reset_string(openFileString); 
 			reset_string(saveFileString);
@@ -40,22 +42,24 @@ int main(){
 					int_to_char, finished, leg_array, false); 
 
 			openFile.open(openFileString, std::ios_base::in); // open read file
-			saveFile.open(saveFileString, std::ios_base::out); // open new file
 		
 			if(!openFile || !saveFile){
+				logFile.open("error_log.txt" , 
+						std::ios_base::out|std::ios_base::app);
 				if(!openFile){
 					std::cerr << "Error opening original kinematic file.\n";
-					if(saveFile)
-						saveFile.close();
-					return 1;
+					logFile.write(openFileString, std::strlen(openFileString));
 				}else{
 					std::cerr << "Error opening original to-write-to file.\n";
-					if(openFile)
-						openFile.close();
-					return 1;
+					logFile.write(saveFileString, sizeof saveFileString);
 				}
+				logFile.write(fileOpenErrorString, sizeof fileOpenErrorString);
+				logFile.close();
+				continue; // skip to start of while(!finished) loop and try next file
 			}
-					
+				// don't open new file until successful open of read only file		
+			saveFile.open(saveFileString, std::ios_base::out); // open new file
+
 			const int stringSize {50};
 			char string [stringSize] {'\0'}, kinematic_comp_string [20] {"MARKER_NAMES"};
 			int loop_counter{0};
